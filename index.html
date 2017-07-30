@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>EntityManager</title>
+
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- My styles -->
+    <link rel="stylesheet" href="css/entityManager.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
+            <h1>Entity Manager</h1>
+            <h3>The list manager we were all waiting for</h3>
+            <br>
+            <div class="center-x">
+                <div>
+                <div style="overflow: hidden; position: relative;">
+                    <div class="enLabel">Author</div>
+                    <div style="padding-left: 240px;" class="center-y">
+                        <div class="">
+                            <img src="img/slack-dp.png" style="border: 0;border-radius: 50%;height: 60px;margin: 0;" alt="chinmay">
+                        </div>
+                        <div style="margin-left: 10px;" href="https://twitter.com/chicho191">Chinmay Chaudhary</div>
+                    </div>
+                </div>
+                <div style="overflow: hidden; position: relative; margin-top: 16px;">
+                    <div class="enLabel">Reviewers</div>
+                    <img src="img/reviewers.png" style="float: left; border: 0; height: 60px; background-color: transparent; margin: 0; padding-left: 240px;"
+                            alt="reviewers">
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <!--<section data-background="img/entityManagerBg1.jpg">-->
+        <section>
+            <p>
+                <span class="txt-highlight">EntityManager</span> tries to reduce the efforts for making a list manager.
+            </p>
+        </section>
+
+        <!--<section data-background="img/usersManager.png"></section>-->
+
+        <section>
+            <h2 style="text-transform: none">EntityManager - A <a
+                    href="https://medium.com/@learnreact/container-components-c0e67432e005">dumb</a> component</h2>
+            <ul>
+                <li>Header (with breadcrumbs + actions + bulkActions)</li>
+                <li>SubHeader ( with quickFilters )</li>
+                <li>Sidebar</li>
+                <li>Facets Filter</li>
+                <li>Table and others...</li>
+            </ul>
+        </section>
+
+        <section>
+            <section>
+                <div>
+                    <p>UsersManager.js</p>
+                    <pre><code data-trim contenteditable>
+&lt;EntityManager
+items={this.props.users /* row items */}
+</code><code class="fragment" data-trim contenteditable>columnConfigs={USERS_MANAGER_COLUMN_CONFIGS /* table config */}
+/&gt;</code></pre>
+                </div>
+            </section>
+
+            <section>
+                <div>
+                    <p>/usersManager/columnConfigs.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+export default [
+  {
+    width: 200, //column width in px
+    columnKey: 'NAME',
+    displayName: __('User Name'), //column name
+    cellRenderer: SnProfileRenderer,
+    headerRenderer: HeaderRenderer, //column header renderer
+    dataHelper: {
+      getCellData: getDataHelperFn(COLUMN_TYPES.fullName),
+    },
+  },
+  .
+  .
+  .
+];
+                    </code></pre>
+                </div>
+            </section>
+
+            <section>
+                <div>
+                    <p>UsersManager.js</p>
+                    <div class="flex-row-container">
+                        <div style="width: 50%;" class="flex-item-auto">
+                        <pre><code data-trim contenteditable>
+&lt;EntityManager
+items={this.props.users}
+columnConfigs={USERS_MANAGER_COLUMN_CONFIGS}
+
+onSearch={this.handleSearch}
+onSideNavItemSelect={this.handleSideNavItemSelection}
+onEntityItemSelect={this.handleEntityItemSelection}
+/&gt;
+</code></pre>
+                        </div>
+                        <div style="width: 50%; float: left;" class="flex-item-auto fragment">
+                        <pre><code data-trim contenteditable>
+&lt;EntityManager
+items={this.props.users}
+columnConfigs={USERS_MANAGER_COLUMN_CONFIGS}
+onAction={this.handleAction}
+/&gt;
+</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+/**
+ *
+ * @param action: shape({type: string, payload: Object})
+ */
+handleAction = action => {
+  switch (action.type) {
+    case entityManagerActionTypes.ENTITY_PAGE_CHANGE:
+      this.handlePageChange(action);
+      break;
+    default:
+      this.handleDefaultAction(action);
+      break;
+  }
+};
+
+handlePageChange(action) {
+    this.props.loadPage(action.payload.pageNumber);
+}
+           </code></pre>
+            </section>
+
+            <section>
+                <p>spr-base-ui/connectors/connectActions.js</p>
+                <code class="hljs" data-trim>/* code for connectActions.js */</code>
+            </section>
+
+            <section>
+                <p>actionsHandler.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import { loadPage } from 'actions/usersAction';
+
+const handlersMap = {
+    [entityManagerActionTypes.ENTITY_PAGE_CHANGE](action, {dispatch} ){
+        dispatch(loadPage(action.payload.pageNumber);
+    },
+};
+
+export default handlersMap;
+            </code></pre>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import connectActions from 'spr-base-ui/connectors/connectActions';
+import EntityManager from 'spr-space-ui/lib/containers/EntityManager';
+import USERS_MANAGER_COLUMN_CONFIGS from './columnConfigs';
+import handlers from './actionsHandler';
+
+class UsersManager extends PureComponent {
+
+    render(){
+
+    return (
+        &lt;EntityManager
+            items={this.props.users}
+            columnConfigs={USERS_MANAGER_COLUMN_CONFIGS}
+            sideNavItems={this.props.sideNavItems}
+            quickFilters={this.props.quickFilters}
+            onAction={this.props.onAction /* injected by `connectActions` */}
+            searchEnabled
+        /&gt;
+        );
+    }
+}
+
+export default connectActions(handlers)(UsersManager);
+            </code></pre>
+            </section>
+
+            <section>
+                <p>actionsHandler.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+{
+    [entityManagerActionTypes.ENTITY_PAGE_CHANGE](action, {dispatch} ){
+        dispatch(loadPage(action.payload.pageNumber);
+    },
+    .
+    .
+    .
+    DEFAULT(action, {getState, setState, dispatch}) {
+
+    },
+}
+            </code></pre>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+export default connectActions(handlers, handlers.DEFAULT)(UsersManager);
+            </code></pre>
+            </section>
+        </section>
+
+        <section>
+            <p>/usersManager</p>
+            <div style="overflow: hidden">
+                <ol style="float: left; width: 100%;">
+                    <li><span class="txt-highlight">UsersManager.js</span></li>
+                    <li><span class="txt-highlight">columnConfigs.js</span> - for the table</li>
+                    <li><span class="txt-highlight">actionsHandler.js</span> - for the action handling</li>
+                </ol>
+            </div>
+        </section>
+
+        <section>
+            <img src="img/diagram1.jpg" alt="diagram">
+        </section>
+
+        <section>
+            <p>reducers/index.js</p>
+            <pre><code class="hljs" data-trim contenteditable>
+import {combineReducers} from 'redux';
+
+export default combineReducers( {
+  outboundMessages,
+  common,
+  contacts,
+  users, // will be used by UsersManager
+});
+            </code></pre>
+        </section>
+
+        <section>
+            <p>users.js (reducer)</p>
+            <pre><code class="hljs" data-trim contenteditable>
+const INITIAL_STATE = {
+    items: [],
+    loading: true,
+    loaded: false,
+    hasMore: false,
+    errors: null,
+    pageInfo: {
+          start: 0,
+          rows: 20,
+    },
+    totalCount: 0,
+}
+            </code></pre>
+        </section>
+
+        <section>
+            <p>users.js (reducer)</p>
+            <pre><code class="hljs" data-trim contenteditable>
+function users(state = INITIAL_STATE, action) {
+  switch (action.type) {
+    case USERS_LOADING:
+      return update(state, { loading: { $set: true } });
+    default:
+      return state;
+  }
+}            </code></pre>
+        </section>
+
+        <section>
+            <p>accounts.js (reducer)</p>
+            <pre><code class="hljs" data-trim contenteditable>
+function users(state = INITIAL_STATE, action) {
+  switch (action.type) {
+    case ACCOUNTS_LOADING:
+      return update(state, { loading: { $set: true } });
+    default:
+      return state;
+  }
+}            </code></pre>
+        </section>
+
+        <section>
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+const createEntities = entityType =>
+  function entitiesReducer(state = INITIAL_STATE, action) {
+    if (action.entityType !== entityType) {
+      return state;
+    }
+
+    switch (action.type) {
+      case ENTITIES_LOADING:
+      default:
+        return state;
+    }
+  };
+export default createEntities;
+                </code></pre>
+            </section>
+
+            <section>
+                <div>
+                    <p>users.js (reducer)</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+function users(state = INITIAL_STATE, action) {
+  switch (action.type) {
+    case USERS_LOADING:
+      return update(state, { loading: { $set: true } });
+    default:
+      return state;
+  }
+}            </code></pre>
+                </div>
+                <div class="fragment">
+                    <pre><code class="hljs" data-trim contenteditable>
+import createEntities from 'spr-base-ui/reducers/entities';
+export default createEntities('USERS');
+            </code></pre>
+                </div>
+                <div class="fragment">
+                    <p>accounts.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+import createEntities from 'spr-base-ui/reducers/entities';
+export default createEntities('ACCOUNTS');
+            </code></pre>
+                </div>
+            </section>
+
+            <section>
+                <div>
+                    <p>usersActions.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+export const fetchUsers = () => dispatch => {
+  dispatch({
+    type: ENTITIES_LOADING,
+    entityType: 'USERS'
+  })
+};            </code></pre>
+                </div>
+                <div class="fragment">
+                    <p>accountsActions.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+export const fetchAccounts = () => dispatch => {
+  dispatch({
+    type: ENTITIES_LOADING,
+    entityType: 'ACCOUNTS'
+  })
+};            </code></pre>
+                </div>
+            </section>
+
+            <section>
+                <p>redux state</p>
+                <pre><code class="hljs" data-trim contenteditable>
+{
+    users: {
+      items: [],
+      loading: true,
+      loaded: false,
+      hasMore: false,
+      errors: null,
+      pageInfo: {
+        start: 0,
+        rows: 20,
+      },
+      totalCount: 0,
+    }
+}            </code></pre>
+            </section>
+
+            <section>
+                <p>redux state</p>
+                <pre><code class="hljs" data-trim contenteditable>
+{
+    users: {
+      byId: {},
+      ids: [],
+      loading: true,
+      loaded: false,
+      hasMore: false,
+      errors: null,
+      pageInfo: {
+        start: 0,
+        rows: 20,
+      },
+      totalCount: 0,
+    }
+}            </code></pre>
+            </section>
+
+            <section>
+                <p>users.js</p>
+                <br>
+                <pre><code class="hljs" data-trim contenteditable>
+import createEntities from 'spr-base-ui/reducers/entities';
+
+function byId(state = {}, action) {
+  switch (action.type) {
+    case ENTITIES_RECEIVED:
+      return update(state, {
+        $merge: _keyBy(action.entities, 'userId'),
+      });
+
+    case ENTITY_DELETED:
+      return update(state, { [action.id]: { $set: null } });
+
+    case USER_FAVORITED:
+      return update(state, { [action.id]: { $merge: { favorite: true } } });
+
+    default:
+      return state;
+  }
+}
+
+const users = combineReducers({
+  byId,
+  list: createEntities('USERS'),
+});
+
+export default users;
+            </code></pre>
+            </section>
+
+            <section>
+                <p>redux state</p>
+                <pre><code class="hljs" data-trim contenteditable>
+{
+    users: {
+      byId: {},
+      list: {
+        ids: [],
+        loading: true,
+        loaded: false,
+        hasMore: false,
+        errors: null,
+        pageInfo: {
+          start: 0,
+          rows: 20,
+        },
+        totalCount: 0,
+      }
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {getUsers} from 'reducers/users';
+
+const mapStateToProps = state => (
+    {
+        users: getUsers(state.users),
+    }
+);
+
+export default compose(
+    connect(mapStateToProps),
+    connectActions(handlers)
+)(UsersManager);</code></pre>
+            </section>
+
+            <section>
+                <div>
+                    <p>users.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+export const getUsers = users => users.list.ids.map(id => users.byId[id]);
+</code></pre>
+                </div>
+                <div class="fragment">
+                    <p>accounts.js</p>
+                    <pre><code class="hljs" data-trim contenteditable>
+export const getAccounts = accounts => accounts.list.ids.map(id => accounts.byId[id]);
+</code></pre>
+                </div>
+            </section>
+
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+export const getEntities = entities => entities.list.ids.map(id => entities.byId[id]);</code></pre>
+            </section>
+
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+const INITIAL_STATE = {
+    ids: [],
+    loading: true,
+    loaded: false,
+    hasMore: false,
+    errors: null,
+    pageInfo: {
+          start: 0,
+          rows: 20,
+    },
+    totalCount: 0,
+};
+
+const createEntities = entityType =>
+  function entitiesReducer(state = INITIAL_STATE, action) {
+    if (action.entityType !== entityType) {
+      return state;
+    }
+
+    switch (action.type) {
+      case ENTITIES_LOADING:
+      default:
+        return state;
+    }
+  };
+export default createEntities;
+
+export const getIds = entities => entities.ids;
+//doesn't have access to the `byId` map
+                </code></pre>
+            </section>
+
+            <section>
+                <p>redux state</p>
+                <pre><code class="hljs" data-trim contenteditable>
+{
+    users: {
+      byId: {}, //maintained by `users.js`
+      list: { //maintained by `entities.js`
+        ids: [],
+        loading: true,
+        loaded: false,
+        hasMore: false,
+        errors: null,
+        pageInfo: {
+          start: 0,
+          rows: 20,
+        },
+        totalCount: 0,
+      }
+    }
+}</code></pre>
+            </section>
+
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {combineReducers} from 'redux';
+
+const createListReducer = entityType =>
+    function listReducer(state = INITIAL_STATE, action) {
+        if (action.entityType !== entityType) {
+          return state;
+        }
+
+        switch (action.type) {
+          case ENTITIES_LOADING:
+          default:
+            return state;
+        }
+    };
+
+const createEntities = (entityType, {byId} ) => combineReducers({
+    byId,
+    list: createListReducer(entityType),
+  });
+
+
+export default createEntities;
+
+export const getEntities = entities => entities.list.ids.map(id => entities.byId[id]);
+                </code></pre>
+            </section>
+
+            <section>
+                <p>users.js</p>
+                <br>
+                <pre><code class="hljs" data-trim contenteditable>
+import createEntities from 'spr-base-ui/reducers/entities';
+
+function byId(state = {}, action) {
+  switch (action.type) {
+    case ENTITIES_RECEIVED:
+      return update(state, {
+        $merge: _keyBy(action.entities, 'userId'),
+      });
+
+    case ENTITY_DELETED:
+      return update(state, { [action.id]: { $set: null } });
+
+    case USER_FAVORITED:
+      return update(state, { [action.id]: { $merge: { favorite: true } } });
+
+    default:
+      return state;
+  }
+}
+
+const users = createEntities('USERS', {byId});
+
+export default users;
+            </code></pre>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {getEntities} from 'spr-base-ui/reducers/entities';
+
+const mapStateToProps = state => (
+    {
+        users: getEntities(state.users),
+    }
+);
+
+export default compose(
+    connect(mapStateToProps),
+    connectActions(handlers)
+)(UsersManager);</code></pre>
+            </section>
+
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code>export const getEntities = entities => entities.list.ids.map(id => entities.byId[id]);</code></pre>
+                </code></pre>
+                <pre class="fragment"><code class="hljs" data-trim contenteditable>
+import {createSelector} from 'reselect';
+
+export const getEntities = createSelector(
+    _property('byId'), // users => users.byId,
+    _property('list.ids'),
+    function makeEntities(byId, ids) {
+        return ids.map(id => byId[id]);
+    }
+);</code></pre>
+            </section>
+
+            <!--<section data-background="img/users.png"></section>-->
+            <!--<section data-background="img/customFields.png"></section>-->
+
+            <section>
+                <p>CustomFieldsManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {getEntities} from 'spr-base-ui/reducers/entities';
+
+const mapStateToProps = state => (
+    {
+        customFields: getEntities(state.customFields),
+    }
+);
+
+export default compose(
+    connect(mapStateToProps),
+    connectActions(handlers)
+)(CustomFieldsManager);</code></pre>
+            </section>
+
+
+            <section>
+                <p>spr-base-ui/reducers/entities.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {createSelector} from 'reselect';
+
+export const getEntities = createSelector(
+    _property('byId'), // users => users.byId,
+    _property('list.ids'),
+    function makeEntities(byId, ids) {
+        return ids.map(id => byId[id]);
+    }
+);</code></pre>
+                <div class="fragment">
+                <pre><code class="hljs" data-trim contenteditable>
+import {createSelector} from 'reselect';
+
+export const makeGetEntities = () => createSelector(
+    _property('byId'),
+    _property('list.ids'),
+    function makeEntities(byId, ids) {
+        return ids.map(id => byId[id]);
+    }
+);</code></pre>
+                    <p>Taken from <a href="https://github.com/reactjs/reselect#selectorstodoselectorsjs-1">reselect</a>
+                        docs.</p>
+                </div>
+            </section>
+
+            <section>
+                <p>UsersManager.js - will change to</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {getEntities} from 'spr-base-ui/reducers/entities';
+
+const mapStateToProps = state => (
+    {
+        users: getEntities(state.users),
+    }
+);
+
+export default compose(
+    connect(mapStateToProps),
+    connectActions(handlers)
+)(UsersManager);</code></pre>
+            </section>
+
+            <section>
+                <p>UsersManager.js</p>
+                <pre><code class="hljs" data-trim contenteditable>
+import {makeGetEntities} from 'spr-base-ui/reducers/entities';
+
+const makeMapStateToProps = () => {
+  const getEntities = makeGetEntities();
+  return state => (
+    {
+      users: getEntities(state.users),
+    }
+  );
+};
+export default compose(
+    connect(makeMapStateToProps),
+    connectActions(handlers)
+)(UsersManager);</code></pre>
+            </section>
+        </section>
+
+        <section>
+            <p>actions and reducers</p>
+            <div style="overflow: hidden">
+                <ol style="float: left; width: 100%;">
+                    <li><span class="txt-highlight">usersActions.js</span> - actions</li>
+                    <li><span class="txt-highlight">users.js</span> - reducer</li>
+                </ol>
+            </div>
+        </section>
+
+        <section>
+            <p>UsersManager.js</p>
+            <pre><code class="hljs" data-trim contenteditable>
+import connectActions from 'spr-base-ui/connectors/connectActions';
+import EntityManager from 'spr-space-ui/lib/containers/EntityManager';
+import USERS_MANAGER_COLUMN_CONFIGS from './columnConfigs';
+import handlers from './actionsHandler';
+import {makeGetEntities} from 'spr-base-ui/reducers/entities';
+
+class UsersManager extends PureComponent {
+
+    render(){
+
+    return (
+        &lt;EntityManager
+            items={this.props.users}
+            columnConfigs={USERS_MANAGER_COLUMN_CONFIGS}
+            sideNavItems={this.props.sideNavItems}
+            quickFilters={this.props.quickFilters}
+            onAction={this.props.onAction /* injected by `connectActions` */}
+            searchEnabled
+        /&gt;
+        );
+    }
+}
+
+const makeMapStateToProps = () => {
+  const getEntities = makeGetEntities();
+  return state => (
+    {
+      users: getEntities(state.users),
+    }
+  );
+};
+export default compose(
+    connect(makeMapStateToProps),
+    connectActions(handlers)
+)(UsersManager);
+            </code></pre>
+        </section>
+
+        <section>
+            <p>/usersManager</p>
+            <div style="overflow: hidden">
+                <ol style="float: left; width: 100%;">
+                    <li><span class="txt-highlight">UsersManager.js</span></li>
+                    <li><span class="txt-highlight">columnConfigs.js</span> - for the table</li>
+                    <li><span class="txt-highlight">actionsHandler.js</span> - for the action handling</li>
+                </ol>
+            </div>
+
+            <p>actions and reducers</p>
+            <div style="overflow: hidden">
+                <ol style="float: left; width: 100%;">
+                    <li><span class="txt-highlight">usersActions.js</span> - actions</li>
+                    <li><span class="txt-highlight">users.js</span> - reducer</li>
+                </ol>
+            </div>
+        </section>
+
+        <section>
+            <img src="img/diagram-white.png" alt="diagram">
+        </section>
+
+        <section>
+            <h2>What next?</h2>
+            <ul>
+                <li>spr-base-ui/connectors</li>
+                <li>spr-base-ui/actionCreators</li>
+                <li>spr-space-ui/containers</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Readings</h2>
+            <ul style="float: left;">
+                <li><a href="https://egghead.io/courses/getting-started-with-redux">Getting Started with Redux</a></li>
+                <li><a href="https://css-tricks.com/learning-react-container-components/">Container Components ( CSS
+                    tricks )</a></li>
+                <li><a href="https://medium.com/@learnreact/container-components-c0e67432e005">Container Components (
+                    Medium )</a></li>
+                <li><a href="https://github.com/reactjs/reselect">Reselect</a></li>
+                <li><a href="https://facebook.github.io/react/docs/higher-order-components.html">Higher-Order
+                    Components</a></li>
+            </ul>
+        </section>
+
+        <section>
+            <h3>The Team</h3>
+            <ul>
+                <li>Abhishek Khurana</li>
+                <li>Abhinav Singi</li>
+                <li>Urvashi Gupta</li>
+                <li>Chinmay Chaudhary</li>
+            </ul>
+            <p class="fragment">Thank you Prashasti, for your inputs and for fixing the bugs.</p>
+        </section>
+
+        <section data-background="https://media.giphy.com/media/KQOPqeBRpimcw/giphy.gif"></section>
+
+        <section style="text-align: left;">
+            <h1>Questions?</h1>
+        </section>
+
+    </div>
+
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+
+  // More info https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+
+    transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+    // More info https://github.com/hakimel/reveal.js#dependencies
+    dependencies: [
+      {
+        src: 'lib/js/classList.js', condition: function () {
+        return !document.body.classList;
+      }
+      },
+      {
+        src: 'plugin/markdown/marked.js', condition: function () {
+        return !!document.querySelector('[data-markdown]');
+      }
+      },
+      {
+        src: 'plugin/markdown/markdown.js', condition: function () {
+        return !!document.querySelector('[data-markdown]');
+      }
+      },
+      {
+        src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+        hljs.initHighlightingOnLoad();
+      }
+      },
+      { src: 'plugin/zoom-js/zoom.js', async: true },
+      { src: 'plugin/notes/notes.js', async: true }
+    ]
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+.txt-highlight {
+    color: #13DAEC; !important;
+}
+
+.center-x-y {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-y {
+    display: flex;
+    align-items: center;
+}
+
+.center-x {
+    display: flex;
+    justify-content: center;
+}
+
+.flex-row-container {
+    display: flex;
+}
+
+.flex-item-1 {
+    flex: 1;
+    min-width: 0;
+}
+
+.flex-item-auto {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.userManagerImg {
+    height: 500px;
+    width: 800px;
+    background-size: contain;
+    background-position: center center;
+    background-image: url(../img/userManager.png);
+    background-repeat: no-repeat;
+}
+
+.enLabel{
+    width: 190px;
+    position: absolute;
+    text-align: right;
+    top: 50%;
+    transform: translateY(-50%);
+}
